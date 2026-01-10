@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  spark-processor:
+    build:
+      context: ./process-service
+      dockerfile: Dockerfile
+    image: ${SPARK_PROCESSOR_IMAGE_NAME:-algolia-spark-processor}
+    container_name: ${SPARK_PROCESSOR_CONTAINER_NAME:-algolia-spark-processor}
+    restart: unless-stopped
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_HOST}:${KAFKA_PORT}
+      KAFKA_TOPIC: orders-cdc
+      CHECKPOINT_LOCATION: /tmp/spark-checkpoints
+      OUTPUT_PATH: /output/orders
+    volumes:
+      - spark_output:/output
+    networks:
+      - etl_net
+
+  bigquery-loader:
+    build:
+      context: ./bigquery-loader-service
+      dockerfile: Dockerfile
+    image: ${BQ_LOADER_IMAGE_NAME:-algolia-bq-loader}
+    container_name: ${BQ_LOADER_CONTAINER_NAME:-algolia-bq-loader}
+    restart: unless-stopped
+    depends_on:
+      - spark-processor
+    environment:
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+      BQ_DATASET: ${BQ_DATASET:-etl_warehouse}
+      GCS_BUCKET: ${GCS_BUCKET}
+      LOCAL_PARQUET_DIR: /output/orders
+      LOADER_MODE: monitor
+      CHECK_INTERVAL: 30
+      GOOGLE_APPLICATION_CREDENTIALS: /root/.config/gcloud/application_default_credentials.json
+    volumes:
+      - spark_output:/output
+      - ~/.config/gcloud:/root/.config/gcloud:ro
+    networks:
+      - etl_net
+
+
+volumes:
+  spark_output:
+
+networks:
+  etl_net:
+    name: ${COMPOSE_PROJECT_NAME}_etl_net
+    external: true
