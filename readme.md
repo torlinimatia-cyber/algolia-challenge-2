@@ -5,7 +5,7 @@ Nothing to hide I clearly used claude AI to support development.
 I did not have any hands-on experience with Kafka and Spark.
 
 Running from the project root folder
-<bash deploy.sh>
+bash deploy.sh
 builds all the images and starts storage services, cdc services, and process services.
 In a final setup, the script should manage gcp resources using scripts contained in gcp-utils creating a gcp bucket and a bigquery dataset after asking for authentication sourcing from variables defined in .env.  (gcp project must exist). 
 NB authentication and bq dataset creation work properly, but gcp bucket creation does not
@@ -16,7 +16,7 @@ General architecture and data flow
 ![alt text](image.png)
 
 To test the pipeline run 
-<bash test.sh> 
+bash test.sh
 It will insert a second order (data-samples/order-2.json) and generate a log folder containing one log file for each service called during the process (until bq loader). Only containers logs for this project are requested.
 
 
