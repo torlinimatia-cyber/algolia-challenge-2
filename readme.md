@@ -31,6 +31,10 @@ events generating parquet files stored in a docker volume.
 bigquery-loader-service reads parquet files from the docker volume each 30 seconds and
 uploads them to gcp bucket and bq dataset. eventID can be used via GROUP_BY on BQ for deduplication.
 
+From docs I see Big query supports schema evolution via apache Iceberg, while for lower-level schema evolution 
+a semantic layer in the middle of the Storage layer and the Extract layer can help in decoupling data meaning data syntax, allowing 
+for flexible representation and enabling modular integration of disparate formats (via development of ad-hoc CDC consumers) while the rest of the pipeline remains invariated. 
+
 Limitation -> mitigation:
 Storage: 
 - No RAID -> implement a RAID solution for redundancy
